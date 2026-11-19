@@ -36,7 +36,241 @@
      This box is empty on purpose. In Part 7 you paste an interactive
      graphic BETWEEN the opening <div> and the closing </div> below.
      ===================================================================== -->
-<div class="showcase"></div>
+<div class="showcase">
+  <!-- HTML: Creates the interactive golf brand leaderboard -->
+<div class="showcase-leaderboard">
+  <div class="showcase-header">
+    <div>
+      <div class="showcase-title">THE BEST GOLF BRANDS</div>
+      <div class="showcase-subtitle">Who's on top?</div>
+    </div>
+    <div class="showcase-live">● LIVE</div>
+  </div>
+
+  <div class="showcase-board">
+    <div class="showcase-row" data-brand="Titleist">
+      <div class="showcase-rank">1</div>
+      <div class="showcase-brand">Titleist</div>
+      <div class="showcase-change">—</div>
+    </div>
+
+    <div class="showcase-row" data-brand="Callaway">
+      <div class="showcase-rank">2</div>
+      <div class="showcase-brand">Callaway</div>
+      <div class="showcase-change">—</div>
+    </div>
+
+    <div class="showcase-row" data-brand="TaylorMade">
+      <div class="showcase-rank">3</div>
+      <div class="showcase-brand">TaylorMade</div>
+      <div class="showcase-change">—</div>
+    </div>
+  </div>
+
+  <div class="showcase-footer">
+    Rankings update automatically
+  </div>
+</div>
+
+
+<!-- CSS: Styles the leaderboard while staying inside the showcase container -->
+<style>
+.showcase .showcase-leaderboard {
+  width: 100%;
+  max-width: 600px;
+  height: 420px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: YOUR FONT, Arial, sans-serif;
+  background: #YOUR COLOR;
+  color: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.showcase .showcase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.showcase .showcase-title {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.showcase .showcase-subtitle {
+  margin-top: 5px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.showcase .showcase-live {
+  color: #YOUR ACCENT;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.showcase .showcase-board {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.showcase .showcase-row {
+  display: grid;
+  grid-template-columns: 55px 1fr 55px;
+  align-items: center;
+  min-height: 75px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  transition: transform 0.45s ease, opacity 0.45s ease;
+}
+
+.showcase .showcase-row.showcase-moving {
+  transform: scale(1.03);
+  border-color: #YOUR ACCENT;
+}
+
+.showcase .showcase-rank {
+  font-size: 27px;
+  font-weight: 900;
+  color: #YOUR ACCENT;
+}
+
+.showcase .showcase-brand {
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.showcase .showcase-change {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.showcase .showcase-up {
+  color: #YOUR ACCENT;
+}
+
+.showcase .showcase-down {
+  color: #ff8b8b;
+}
+
+.showcase .showcase-same {
+  opacity: 0.5;
+}
+
+.showcase .showcase-footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+  .showcase .showcase-leaderboard {
+    height: 380px;
+    padding: 18px;
+  }
+
+  .showcase .showcase-title {
+    font-size: 20px;
+  }
+
+  .showcase .showcase-row {
+    min-height: 68px;
+    grid-template-columns: 45px 1fr 45px;
+    padding: 0 14px;
+  }
+
+  .showcase .showcase-brand {
+    font-size: 18px;
+  }
+}
+</style>
+
+
+<!-- JavaScript: Randomly changes the order of the three golf brands -->
+<script>
+(function () {
+  const board = document.querySelector('.showcase .showcase-board');
+  const rows = Array.from(board.querySelectorAll('.showcase-row'));
+
+  let previousOrder = rows.map(row => row.dataset.brand);
+
+  function shuffle(array) {
+    const copy = [...array];
+
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+
+    return copy;
+  }
+
+  function updateLeaderboard() {
+    let newOrder = shuffle(previousOrder);
+
+    while (
+      newOrder.join(',') === previousOrder.join(',')
+    ) {
+      newOrder = shuffle(previousOrder);
+    }
+
+    const oldPositions = {};
+
+    previousOrder.forEach((brand, index) => {
+      oldPositions[brand] = index + 1;
+    });
+
+    newOrder.forEach((brand, index) => {
+      const row = rows.find(
+        r => r.dataset.brand === brand
+      );
+
+      const oldRank = oldPositions[brand];
+      const newRank = index + 1;
+
+      row.querySelector('.showcase-rank').textContent = newRank;
+
+      const change = row.querySelector('.showcase-change');
+
+      if (newRank < oldRank) {
+        change.textContent = '▲ ' + (oldRank - newRank);
+        change.className = 'showcase-change showcase-up';
+      } else if (newRank > oldRank) {
+        change.textContent = '▼ ' + (newRank - oldRank);
+        change.className = 'showcase-change showcase-down';
+      } else {
+        change.textContent = '—';
+        change.className = 'showcase-change showcase-same';
+      }
+
+      row.classList.add('showcase-moving');
+
+      board.appendChild(row);
+
+      setTimeout(() => {
+        row.classList.remove('showcase-moving');
+      }, 450);
+    });
+
+    previousOrder = newOrder;
+  }
+
+  setInterval(updateLeaderboard, 3000);
+})();
+</script>
+</div>
 
 <!-- Footer: fill in your name -->
 <footer>Built by Curtis Lorenz &middot; BMIS 235</footer>
